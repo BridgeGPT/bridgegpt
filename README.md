@@ -1,6 +1,8 @@
 # BridgeGPT
 ### A bridge between ChatGPT and the real world
 
+![image](https://user-images.githubusercontent.com/5659270/226183665-810f9aaa-44b7-4930-b48f-5df3469fc670.png)
+
 ---
 
 ## Overview
