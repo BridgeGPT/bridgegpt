@@ -9,7 +9,8 @@ class SystemService:
     def is_valid_json(self, payload):
         try:
             obj = json.loads(payload)
-            return isinstance(obj, dict) and "action" in obj and "id" in obj and "from" in obj
+            if isinstance(obj, dict) and "action" in obj and "id" in obj and "from" in obj:
+                return obj
         except ValueError:
             return False
 

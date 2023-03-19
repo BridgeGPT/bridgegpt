@@ -1,0 +1,1 @@
+Along with the text "...BridgeGPT Started" show the system time, kernel and OS version.
