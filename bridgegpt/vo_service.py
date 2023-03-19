@@ -15,12 +15,13 @@ class VOService:
         self,
         system_service: SystemService,
         openai_service: OpenAIService,
-        prompts_service: PromptsService
+        prompts_service: PromptsService,
     ):
         self.system_service = system_service
         self.openai_service = openai_service
         self.prompts_service = prompts_service
         self.current_context = [self.prompts_service.get_base_prompt()]
+        self.print_fn = lambda x: None
 
     @classmethod
     def instance(cls):
@@ -32,6 +33,9 @@ class VOService:
             openai_service=openai_service,
             prompts_service=prompts_service
         )
+
+    def set_print(self, fn: callable):
+        self.print_fn = fn
 
     def initialize(self):
         msgs = self.current_context + [self.prompts_service.get_self_test_prompt()]
@@ -47,17 +51,14 @@ class VOService:
         return resp
 
     def handle_input(self, user_input: str):
-        self.current_context.append(ChatMessage(role=ChatRole.USER, content=user_input))
+        self.current_context.append(ChatMessage(role=ChatRole.SYSTEM, content=user_input))
         resp = self.openai_service.generate_response(self.current_context)
-        i = 0
         while self.system_service.is_valid_json(resp):
+            self.print_fn(f'Asking BridgeGPT: {resp}')
             valid_json = self.system_service.is_valid_json(resp)
-            i += 1
             self.current_context.append(ChatMessage(role=ChatRole.ASSISTANT, content=resp))
             outcome = self.system_service.execute_command(command_id=valid_json['id'], command=valid_json['action'])
-            self.current_context.append(ChatMessage(role=ChatRole.SYSTEM, content=outcome))
-            resp = self.openai_service.generate_response(self.current_context)
-        if not i:
-            logger.exception(resp)
-            raise UnexpectedResponseException(message=resp)
+            self.print_fn(f'BridgeGPT outcome: {outcome}')
+            self.current_context.append(ChatMessage(role=ChatRole.USER, content=outcome))
+            resp = self.openai_service.generate_response(self.current_context, temperature=1)
         return resp

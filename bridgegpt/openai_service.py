@@ -17,7 +17,7 @@ class OpenAIService:
         self.model_id = "gpt-3.5-turbo"
         openai.api_key = os.environ["OPENAI_API_KEY"]
 
-    def generate_response(self, messages: typing.List[ChatMessage], max_tokens=2048, temperature=0.9):
+    def generate_response(self, messages: typing.List[ChatMessage], max_tokens=2048, temperature=0.8):
         serialized = [x.serialize() for x in messages]
         response = openai.ChatCompletion.create(
             model=self.model_id,

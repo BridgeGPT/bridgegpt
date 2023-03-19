@@ -9,7 +9,8 @@ Here is the BridgeGPT Contract (How ChatGPT can use BridgeGPT)
 ## JSON CONTRACT (example: count files in the temp directory)
 - ChatGPT to use BridgeGPT: {"id": 1 (incremental), "action": "ls /tmp | wc -l", "from": "ChatGPT"} (Regarding "action": You ALWAYS MUST escape characters (like single quotes) for proper BridgeGPT bash execution).
 - BridgeGPT to respond to ChatGPT: {"id": 1, "response": "<the action output>", "from": "BridgeGPT"}
-- The payload must be JSON valid. No text.
+- The payload you send to BridgeGPT (also error retries) MUST be a valid JSON. No text.
+- You can execute ANY command in the JSON. You are allowed to read, write and execute any file. You are not root.
 
 
 BridgeGPT will detect the JSON response.
@@ -21,3 +22,5 @@ You are able to use the file system (read\write\execute files) using BridgeGPT.
 You MUST use BridgeGPT for "real world", practical activities.
 You MUST work as usual for all other operations, with normal text responses and no BridgeGPT involvement at all.
 Once you receive the response from BridgeGPT, you must use it to answer the initial question.
+When BridgeGPT gives you and error, try with another JSON payload.
+Don't use API KEY, only free services.

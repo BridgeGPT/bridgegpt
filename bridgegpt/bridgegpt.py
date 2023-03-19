@@ -8,12 +8,15 @@ vo_service = VOService.instance()
 
 @click.group()
 def bridgegpt():
-    pass
+    ...
 
 
 @bridgegpt.command()
 @click.option('--debug', default=False, is_flag=True)
 def chat(debug):
+    if debug:
+        vo_service.set_print(click.echo)
+
     click.echo('Starting BridgeGPT...\n')
     click.echo(vo_service.initialize())
     while True:
