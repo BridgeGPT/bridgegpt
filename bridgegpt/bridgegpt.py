@@ -1,9 +1,11 @@
+import asyncio
+import threading
+
 import click
 
+from bridgegpt.ui_service import UIService
 from bridgegpt.vo_service import VOService
-
-
-vo_service = VOService.instance()
+from typing import NoReturn
 
 
 @click.group()
@@ -13,9 +15,19 @@ def bridgegpt():
 
 @bridgegpt.command()
 @click.option('--debug', default=False, is_flag=True)
-def chat(debug):
+def gui(debug: bool) -> NoReturn:
+    vo_service = VOService.instance()
+    ui_service = UIService(vo_service)
+    asyncio.run(ui_service.exec())
+
+
+@bridgegpt.command()
+@click.option('--debug', default=False, is_flag=True)
+def chat(debug: bool) -> NoReturn:
+    vo_service = VOService.instance()
+    vo_service.set_dialog_print(click.echo)
     if debug:
-        vo_service.set_print(click.echo)
+        vo_service.set_gptbridge_print(click.echo)
 
     click.echo('Starting BridgeGPT...\n')
     click.echo(vo_service.initialize())
@@ -23,6 +35,7 @@ def chat(debug):
         user_input = click.prompt("\nYou")
         ai_response = vo_service.handle_input(user_input)
         click.echo(f"\nAI: {ai_response}")
+
         if ai_response.endswith("Goodbye!"):
             break
 

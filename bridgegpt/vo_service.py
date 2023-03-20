@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from bridgegpt.data_types import ChatMessage, ChatRole
@@ -21,7 +22,8 @@ class VOService:
         self.openai_service = openai_service
         self.prompts_service = prompts_service
         self.current_context = [self.prompts_service.get_base_prompt()]
-        self.print_fn = lambda x: None
+        self.gptbridge_print_fn = lambda x: None
+        self.dialog_print_fn = None
 
     @classmethod
     def instance(cls):
@@ -34,12 +36,17 @@ class VOService:
             prompts_service=prompts_service
         )
 
-    def set_print(self, fn: callable):
-        self.print_fn = fn
+    def set_gptbridge_print(self, fn: callable):
+        self.gptbridge_print_fn = fn
 
-    def initialize(self):
+    def set_dialog_print(self, fn: callable):
+        self.dialog_print_fn = fn
+
+    async def initialize(self):
         msgs = self.current_context + [self.prompts_service.get_self_test_prompt()]
-        resp = self.openai_service.generate_response(msgs)
+        self.gptbridge_print_fn('Starting BridgeGPT\n')
+        loop = asyncio.get_event_loop()
+        resp = await loop.run_in_executor(None, self.openai_service.generate_response, msgs)
         valid_json = self.system_service.is_valid_json(resp)
         if not valid_json:
             logger.exception('Failed response:\n%s\n, expected JSON', resp)
@@ -47,18 +54,19 @@ class VOService:
         msgs.append(ChatMessage(role=ChatRole.ASSISTANT, content=resp))
         outcome = self.system_service.execute_command(command_id=valid_json['id'], command=valid_json['action'])
         msgs.append(ChatMessage(role=ChatRole.SYSTEM, content=outcome))
-        resp = self.openai_service.generate_response(msgs)
-        return resp
+        resp = await loop.run_in_executor(None, self.openai_service.generate_response, msgs)
+        self.gptbridge_print_fn(resp)
 
     def handle_input(self, user_input: str):
         self.current_context.append(ChatMessage(role=ChatRole.SYSTEM, content=user_input))
+        print('sending ')
         resp = self.openai_service.generate_response(self.current_context)
         while self.system_service.is_valid_json(resp):
-            self.print_fn(f'Asking BridgeGPT: {resp}')
+            self.gptbridge_print_fn(resp)
             valid_json = self.system_service.is_valid_json(resp)
             self.current_context.append(ChatMessage(role=ChatRole.ASSISTANT, content=resp))
             outcome = self.system_service.execute_command(command_id=valid_json['id'], command=valid_json['action'])
-            self.print_fn(f'BridgeGPT outcome: {outcome}')
+            self.gptbridge_print_fn(outcome)
             self.current_context.append(ChatMessage(role=ChatRole.USER, content=outcome))
             resp = self.openai_service.generate_response(self.current_context, temperature=1)
         return resp
