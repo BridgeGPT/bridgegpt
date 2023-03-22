@@ -16,6 +16,11 @@ class UIService:
         self.loop = asyncio.get_event_loop()
         self._setup_gui()
         self.messages_queue = Queue()
+        self.kill_pill = False
+
+    def set_kill_pill(self, *a, **kw):
+        self.kill_pill = True
+        self.healthy = False
 
     def _setup_gui(self):
         gui = Window(self.loop, self)
@@ -26,6 +31,8 @@ class UIService:
     async def exec(self):
         asyncio.create_task(self._initialize_bridgegpt())
         while True:
+            if self.kill_pill:
+                exit(0)
             try:
                 msg = self.messages_queue.get_nowait()
             except Empty:
@@ -44,7 +51,7 @@ class UIService:
                 else:
                     self.gui.display_system_message(f'{data["data"]}\n')
             self.gui.root.update()
-            await asyncio.sleep(.01)
+            await asyncio.sleep(.001)
 
     def add_message(self, message, from_input=False):
         self.messages_queue.put({'data': message, 'from_input': from_input, 'dest': 'chat'})
@@ -66,5 +73,6 @@ class UIService:
         try:
             await self.vo_service.initialize()
         except:
-            logger.exception('initialize bridgegpt error')
+            if self.kill_pill:
+                return
             raise

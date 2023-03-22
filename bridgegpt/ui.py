@@ -11,14 +11,20 @@ class Window(tk.Tk):
         self.chat_history = tk.Text(self.root, state=tk.DISABLED, bg="#222", fg="white")
         self.chat_history_scrollbar = tk.Scrollbar(self.root)
         self.chat_history_scrollbar.grid(row=0, column=1, padx=(0, 0), pady=10, sticky="NS")
-        self.chat_history = tk.Text(self.root, state=tk.DISABLED, bg="#222", fg="white", yscrollcommand=self.chat_history_scrollbar.set)
+        self.chat_history = tk.Text(
+            self.root, state=tk.DISABLED, bg="#222", fg="white",
+            yscrollcommand=self.chat_history_scrollbar.set
+        )
         self.chat_history.grid(row=0, column=0, padx=(0, 0), pady=10, sticky="NSEW")
         self.chat_history_scrollbar.config(command=self.chat_history.yview)
 
         self.system_history = tk.Text(self.root, state=tk.DISABLED, bg="#222", fg="white")
         self.system_history_scrollbar = tk.Scrollbar(self.root)
         self.system_history_scrollbar.grid(row=0, column=3, padx=(0, 10), pady=10, sticky="NS")
-        self.system_history = tk.Text(self.root, state=tk.DISABLED, bg="#222", fg="white", yscrollcommand=self.system_history_scrollbar.set)
+        self.system_history = tk.Text(
+            self.root, state=tk.DISABLED, bg="#222", fg="white",
+            yscrollcommand=self.system_history_scrollbar.set
+        )
         self.system_history.grid(row=0, column=2, padx=(0, 0), pady=10, sticky="NSEW")
         self.system_history_scrollbar.config(command=self.system_history.yview)
 
@@ -48,7 +54,7 @@ class Window(tk.Tk):
         self.file_menu.add_command(label="Load")
         self.file_menu.add_command(label="Save")
         self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=self.root.quit)
+        self.file_menu.add_command(label="Exit", command=self.ui_service.set_kill_pill)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
 
         self.options_menu = tk.Menu(self.menu_bar, tearoff=0)

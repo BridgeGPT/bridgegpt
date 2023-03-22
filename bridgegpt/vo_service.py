@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from asyncio import CancelledError
 
 from bridgegpt.data_types import ChatMessage, ChatRole
 from bridgegpt.exceptions import UnexpectedResponseException
