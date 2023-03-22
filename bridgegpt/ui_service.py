@@ -1,10 +1,13 @@
 import asyncio
+import logging
 from _queue import Empty
 from queue import Queue
 
 from .ui import Window
 from .vo_service import VOService
 
+
+logger = logging.getLogger('bridgegpt.ui_service')
 
 class UIService:
     def __init__(self, vo_service: VOService):
@@ -30,7 +33,16 @@ class UIService:
             if msg and msg['dest'] == 'chat':
                 self.gui.display_message(f'{msg["data"]}', from_input=msg["from_input"])
             if msg and msg['dest'] == 'system':
-                self.gui.display_system_message(f'{msg["data"]}')
+                data = msg['data']
+                if data.get('action'):
+                    self.gui.display_system_message(f'\nAction {data["id"]} ---------------------------------------\n')
+                    self.gui.display_system_message(f'{data["action"]}\n')
+                elif data.get('error'):
+                    self.gui.display_system_message(f'{data["error"]}\n')
+                elif msg['data']:
+                    self.gui.display_system_message(f'{data["response"]}\n')
+                else:
+                    self.gui.display_system_message(f'{data["data"]}\n')
             self.gui.root.update()
             await asyncio.sleep(.01)
 
@@ -51,4 +63,8 @@ class UIService:
         self.add_message(f'ChatGPT> {response}')
 
     async def _initialize_bridgegpt(self):
-        await self.vo_service.initialize()
+        try:
+            await self.vo_service.initialize()
+        except:
+            logger.exception('initialize bridgegpt error')
+            raise

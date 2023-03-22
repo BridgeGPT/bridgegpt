@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 
 from bridgegpt.data_types import ChatMessage, ChatRole
@@ -44,7 +45,7 @@ class VOService:
 
     async def initialize(self):
         msgs = self.current_context + [self.prompts_service.get_self_test_prompt()]
-        self.gptbridge_print_fn('Starting BridgeGPT\n')
+        self.gptbridge_print_fn({"id": 0, "from": "BridgeGPT", "response": "Starting BridgeGPT\n"})
         loop = asyncio.get_event_loop()
         resp = await loop.run_in_executor(None, self.openai_service.generate_response, msgs)
         valid_json = self.system_service.is_valid_json(resp)
@@ -53,20 +54,19 @@ class VOService:
             raise UnexpectedResponseException(message=resp)
         msgs.append(ChatMessage(role=ChatRole.ASSISTANT, content=resp))
         outcome = self.system_service.execute_command(command_id=valid_json['id'], command=valid_json['action'])
-        msgs.append(ChatMessage(role=ChatRole.SYSTEM, content=outcome))
+        msgs.append(ChatMessage(role=ChatRole.SYSTEM, content=json.dumps(outcome)))
         resp = await loop.run_in_executor(None, self.openai_service.generate_response, msgs)
-        self.gptbridge_print_fn(resp)
+        self.gptbridge_print_fn({"id": 0, "from": "ChatGPT", "response": resp})
 
     def handle_input(self, user_input: str):
         self.current_context.append(ChatMessage(role=ChatRole.SYSTEM, content=user_input))
-        print('sending ')
         resp = self.openai_service.generate_response(self.current_context)
         while self.system_service.is_valid_json(resp):
-            self.gptbridge_print_fn(resp)
             valid_json = self.system_service.is_valid_json(resp)
+            self.gptbridge_print_fn(valid_json)
             self.current_context.append(ChatMessage(role=ChatRole.ASSISTANT, content=resp))
             outcome = self.system_service.execute_command(command_id=valid_json['id'], command=valid_json['action'])
             self.gptbridge_print_fn(outcome)
-            self.current_context.append(ChatMessage(role=ChatRole.USER, content=outcome))
+            self.current_context.append(ChatMessage(role=ChatRole.USER, content=json.dumps(outcome)))
             resp = self.openai_service.generate_response(self.current_context, temperature=1)
         return resp

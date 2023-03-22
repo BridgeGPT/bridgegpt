@@ -21,7 +21,7 @@ class SystemService:
             response = {"id": command_id, "response": output, "from": "BridgeGPT"}
         except subprocess.CalledProcessError as e:
             response = {"id": command_id, "error": e.output.decode().strip(), "from": "BridgeGPT"}
-        return json.dumps(response)
+        return response
 
     def process_json(self, json_string):
         try:

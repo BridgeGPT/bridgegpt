@@ -1,5 +1,4 @@
 import asyncio
-import threading
 
 import click
 
@@ -16,6 +15,9 @@ def bridgegpt():
 @bridgegpt.command()
 @click.option('--debug', default=False, is_flag=True)
 def gui(debug: bool) -> NoReturn:
+    """
+    Run the visual TKInter GUI
+    """
     vo_service = VOService.instance()
     ui_service = UIService(vo_service)
     asyncio.run(ui_service.exec())
@@ -24,6 +26,9 @@ def gui(debug: bool) -> NoReturn:
 @bridgegpt.command()
 @click.option('--debug', default=False, is_flag=True)
 def chat(debug: bool) -> NoReturn:
+    """
+    Command line tool to chat
+    """
     vo_service = VOService.instance()
     vo_service.set_dialog_print(click.echo)
     if debug:
@@ -38,7 +43,3 @@ def chat(debug: bool) -> NoReturn:
 
         if ai_response.endswith("Goodbye!"):
             break
-
-
-if __name__ == "__main__":
-    bridgegpt()
