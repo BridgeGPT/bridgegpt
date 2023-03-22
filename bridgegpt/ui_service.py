@@ -46,7 +46,7 @@ class UIService:
                     self.gui.display_system_message(f'{data["action"]}\n')
                 elif data.get('error'):
                     self.gui.display_system_message(f'{data["error"]}\n')
-                elif msg['data']:
+                elif data.get('response'):
                     self.gui.display_system_message(f'{data["response"]}\n')
                 else:
                     self.gui.display_system_message(f'{data["data"]}\n')

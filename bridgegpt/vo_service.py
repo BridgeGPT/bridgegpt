@@ -51,7 +51,7 @@ class VOService:
         resp = await loop.run_in_executor(None, self.openai_service.generate_response, msgs)
         valid_json = self.system_service.is_valid_json(resp)
         if not valid_json:
-            logger.exception('Failed response:\n%s\n, expected JSON', resp)
+            logger.exception('Failed response:\n\n\n%s\n\n\n, expected JSON', resp)
             raise UnexpectedResponseException(message=resp)
         msgs.append(ChatMessage(role=ChatRole.ASSISTANT, content=resp))
         outcome = self.system_service.execute_command(command_id=valid_json['id'], command=valid_json['action'])
