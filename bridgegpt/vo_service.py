@@ -45,7 +45,29 @@ class VOService:
         self.dialog_print_fn = fn
 
     async def initialize(self):
-        msgs = self.current_context + [self.prompts_service.get_self_test_prompt()]
+        msgs = self.current_context + [
+            ChatMessage(
+                role=ChatRole.ASSISTANT,
+                content="Understood, tell me a command"
+            ),
+            ChatMessage(
+                role=ChatRole.USER,
+                content="tell me the kernel version"
+            ),
+            ChatMessage(
+                role=ChatRole.ASSISTANT,
+                content='{"id": 1, "action": "uname -r", from: "ChatGPT"}'
+            ),
+            ChatMessage(
+                role=ChatRole.USER,
+                content='{"id": 1, "response": "5.19.0-38-generic"", "from": "BridgeGPT"}'
+            ),
+            ChatMessage(
+                role=ChatRole.ASSISTANT,
+                content="The current kernel version is 5.19.0-38-generic"
+            ),
+            self.prompts_service.get_self_test_prompt()
+        ]
         self.gptbridge_print_fn({"id": 0, "from": "BridgeGPT", "response": "Starting BridgeGPT\n"})
         loop = asyncio.get_event_loop()
         resp = await loop.run_in_executor(None, self.openai_service.generate_response, msgs)

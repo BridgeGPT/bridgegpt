@@ -41,15 +41,17 @@ class UIService:
                 self.gui.display_message(f'{msg["data"]}', from_input=msg["from_input"])
             if msg and msg['dest'] == 'system':
                 data = msg['data']
-                if data.get('action'):
+                if 'action' in data:
                     self.gui.display_system_message(f'\nAction {data["id"]} ---------------------------------------\n')
                     self.gui.display_system_message(f'{data["action"]}\n')
-                elif data.get('error'):
+                elif 'error' in data:
                     self.gui.display_system_message(f'{data["error"]}\n')
-                elif data.get('response'):
+                elif 'response' in data:
                     self.gui.display_system_message(f'{data["response"]}\n')
-                else:
+                elif 'data' in data:
                     self.gui.display_system_message(f'{data["data"]}\n')
+                else:
+                    self.gui.display_system_message(f'{data}\n')
             self.gui.root.update()
             await asyncio.sleep(.001)
 

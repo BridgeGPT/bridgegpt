@@ -1,1 +1,1 @@
-USE_JSON_PAYLOAD: Retrieve the system info, kernel and OS version.
+Retrieve the system info, kernel and OS version.
